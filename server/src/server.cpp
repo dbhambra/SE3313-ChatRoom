@@ -8,9 +8,12 @@
 #include <unordered_map>
 #include <thread>
 #include <iostream>
-
-
-#define PORT 1000
+#include <arpa/inet.h>
+#include <algorithm>
+#include <string>
+#include <vector>
+#include <utility>
+#define PORT 5006
 #define SERVER_BACKLOG 1
 #define BUFFER_SIZE  4096
 
@@ -22,9 +25,17 @@ using namespace std;
 void handle_connection(int);
 void send_msg (const string&);
 void handle_error(const string&);
+
+void add_socket_name(int,string);
+string get_name_from_socket(int);
+int get_socket_from_name(string);
 int client_count = 0;
+
+
+
 mutex mtx;
 unordered_map<string,int> client_sockets;
+vector<pair<string,string>> rooms;
 
 
 
@@ -46,7 +57,7 @@ int main(void){
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_addr.sin_port = htons(PORT);
 
-    if (bind(server_socket,(SA*)&server_addr,sizeof(server_addr)) == -1){
+    if (bind(server_socket,(sockaddr*)&server_addr,sizeof(server_addr)) == -1){
         handle_error("bind() failed");
     }
     printf("Server is running on port %d\n" , PORT);
@@ -59,12 +70,13 @@ int main(void){
         client_addr_size = sizeof(client_addr);
         client_socket = accept(server_socket,(struct sockaddr*)&client_addr,&client_addr_size);
         if (client_socket == -1){
-            handle_error("accept() failed!")
+            handle_error("accept() failed!");
         }
 
         mtx.lock();
         client_count ++;
         mtx.unlock();
+
 
         thread th(handle_connection,client_socket);
         //if(th.joinable()){
@@ -84,13 +96,39 @@ void handle_connection(int client_socket){
     size_t bytes_read;
     int msgsize = 0;
 
-    while(bytes_read = recv(client_socket,buffer,sizeof(buffer)-1,0) >0){
-        printf("%s", buffer);
+    while((bytes_read = recv(client_socket,buffer,sizeof(buffer),0)) != 0) {
+    	buffer[bytes_read] = '\0';
+    	char message_type = buffer[0];
+	buffer[0] = ' ';
+	string received_data(buffer,bytes_read);
+    	if(message_type == '2'){
+        	//printf("Welcome New User: %s",buffer);
+		mtx.lock();
+    		add_socket_name(client_socket,received_data);
+		print_name_from_socket(client_socket);
+		mtx.unlock();
+	}       
     }
-    
 
 }
 
+void add_socket_name(int client_socket, string nickname){
+	client_sockets[nickname] = client_socket;
+}
+string get_name_from_socket(int client_socket){
+	auto it = std::find_if(client_sockets.begin(), client_sockets.end(),
+		[&client_socket](const auto &pair) {
+			return pair.second == client_socket;
+		}
+    	);
+
+	//printf("Nickname for socket #%d:%s\n",it->second,it->first.c_str());
+	return (it->first.c_str());
+}
+
+int get_socket_from_name(string nickname){
+	return client_sockets[nickname];
+}
 
 void handle_error(const string &message){
     cerr << message << endl;
