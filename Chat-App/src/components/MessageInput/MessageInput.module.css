@@ -1,0 +1,19 @@
+.inputContainer {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    border-top: 1px solid #e0e0e0;
+    background-color: #fff;
+    padding-left: 60px;
+  }
+  
+  .textField {
+    flex: 1;
+    margin-right: 8px;
+  }
+  
+  .sendButton {
+    background-color: #1976d2;
+    color: #fff;
+  }
+  
