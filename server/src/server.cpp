@@ -45,7 +45,7 @@ int client_count = 0;
 mutex mtx;//Mutex
 condition_variable cv;
 unordered_map<string,int> client_sockets;//Map for all clients and their respective sokets
-vector<pair<int,int>> rooms;//10 breakout rooms with a capacity of 2 people only
+vector<pair<int,int>> rooms(10);//10 breakout rooms with a capacity of 2 people only
 vector<int> active_sockets(10);
 
 
@@ -125,7 +125,7 @@ void handle_connection(int client_socket){
             }
     
             // Process the message
-            //printf("Received: %s\n", message.c_str());
+            printf("Received: %s\n", message.c_str());
         	vector<string> split_str = splitString(message.c_str(),';');
 		message_type_actions(message[0],client_socket,split_str);		
 		//printf("Message Type: %c\n",message[0]);
@@ -141,12 +141,13 @@ void handle_connection(int client_socket){
 
 int check_room(int room_num){
     int count = 0;
-    if(rooms[room_num].first == 0){
+    if(rooms[room_num-1].first == 0){
         count++;
     }
-    if(rooms[room_num].second == 0){
+    if(rooms[room_num-1].second == 0){
         count++;
     }
+    cout << count << endl;
     return count;
 }
 
@@ -232,8 +233,7 @@ void message_type_actions(const char &message_type,int &client_socket,vector<str
 
 			mtx.lock();
 			string nickname = get_name_from_socket(client_socket);
-			//Remove from all tracking
-			
+			//Remove from all tracking	
 			active_sockets.erase(remove(active_sockets.begin(),active_sockets.end(),client_socket),active_sockets.end());
 			client_sockets.erase(nickname.c_str());
 			close(client_socket);
@@ -242,14 +242,34 @@ void message_type_actions(const char &message_type,int &client_socket,vector<str
 			break;
 		}
             case '4': 
-		{//Join a Room (receive 4;<Room Number>;<client_nickname>)
+		{//Join a Room (receive 4;<Room Number>;<client_nickname>) Room Number starts from 1
 			mtx.lock();
-			int available_space = check_room(0);
+            		int room_num = stoi(split_str[1].c_str());
+			int available_space = check_room(room_num);
+           		int client_socket_from_nickname = get_socket_from_name(split_str[2]);
+			cout << client_socket_from_nickname <<endl;
+            		if(available_space > 0){
+                		if(rooms[room_num-1].first == 0){
+                    			rooms[room_num-1].first = client_socket_from_nickname;
+                		}
+				else{
+				    int client_to_ask = rooms[room_num-1].first;
+				    //Send 9:Join Request 
+				    //9;<client_nickname>
+				    string client_nickname = get_name_from_socket(rooms[room_num-1].first);
+				    printf("Need to ask if it is ok: 9;%s\n",client_nickname.c_str());
+				    //rooms[room_num-1].second = client_socket_from_nickname;
+				}
+			 }
+			 else{
+				printf("Room is not available\n");
+			 }
 			mtx.unlock();
 			break;
 		}
             case '5'://Accept Join Request
 		{
+
                		break;
 		}
             case '6'://Deny (receive <Room Number>)
