@@ -1,0 +1,30 @@
+.item {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #3a4a55;
+  }
+  
+  .item:hover {
+    background-color: #3a4a55;
+  }
+  
+  .info {
+    margin-left: 12px;
+  }
+  
+  .name {
+    font-weight: bold;
+  }
+  
+  .status_open {
+    font-size: 0.9em;
+    color: #0fe42b;
+  }
+
+  .status_chatting {
+    font-size: 0.9em;
+    color: #00eeff;
+  }
+  

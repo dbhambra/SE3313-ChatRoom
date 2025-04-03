@@ -1,0 +1,40 @@
+.messageItem {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  
+  .own {
+    flex-direction: row-reverse;
+  }
+  
+  .bubble {
+    max-width: 60%;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    background-color: #252525;
+    color: white;
+    font-weight: bold;
+    font-size: 120%;
+  }
+  
+  .own .bubble {
+    background-color: #ff5757;
+    color: white;
+    font-weight: bold;
+    font-size: 120%;
+  }
+  
+  .text {
+    margin-bottom: 4px;
+  }
+  
+  .timestamp {
+    font-size: 0.75em;
+    text-align: right;
+    color: #ffffff;
+    opacity: 70%;
+  }
+  
