@@ -14,8 +14,8 @@ const ChatLayout: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
 
   // Handle incoming WebSocket messages
-  const handleServerMessage = (raw: string) => {
-    const [type, payload] = raw.split(';');
+  const handleServerMessage = (msg: { type: string; payload: string }) => {
+    const {type, payload} = msg;
     switch (type) {
       case '1':
         console.log('[Server] Message received:', payload);
@@ -26,13 +26,28 @@ const ChatLayout: React.FC = () => {
       case '3':
         alert('[Server] Room full.');
         break;
+      case '4':
+        console.log('[Server] Room status:', payload === '0' ? 'Full' : 'Available');
+        break;
+      case '5':
+        console.log('[Server] Successfully left room');
+        break;
+      case '6':
+        console.log('[Server] Someone left the room:', payload);
+        break;
+      case '9':
+        console.log('[Server] Incoming request from client:', payload);
+        break;
+      case '10':
+        console.log('[Server] Waiting for other client to accept:', payload);
+        break;
       default:
-        console.log('[Server] Unknown type:', type);
+        console.log('[Server] Unknown type:', payload);
     }
   };
 
     // Connect to WebSocket after username is set
-    const send = useWebSocket(username ? 'ws://localhost:8080' : null, handleServerMessage);
+    const { send } = useWebSocket(username ? 'ws://localhost:8080' : null, handleServerMessage);
     
   const dummyChats: Chat[] = [
     {
@@ -91,10 +106,16 @@ const ChatLayout: React.FC = () => {
     setSelectedChat(chat);
   };
 
+  const sendToServer = (send: (msg: string) => void, code: number, payload?: string) => {
+    const message = payload !== undefined ? `${code};${payload}` : `${code};`;
+    send(message);
+    console.log('Sent:', message);
+  };
+
   const handleUsernameSubmit = (name: string) => {
     setUsername(name);
     setTimeout(() => {
-      send?.(`2;${name}`);
+      sendToServer(send, 2, name);
     }, 100);
   };
 
