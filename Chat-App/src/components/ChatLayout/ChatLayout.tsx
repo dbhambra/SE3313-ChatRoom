@@ -117,7 +117,6 @@ const ChatLayout: React.FC = () => {
   
     setTimeout(() => {
       sendToServer(send, 2, name);
-      sendToServer(send, 2, name);
     }, 100);
   };
   
