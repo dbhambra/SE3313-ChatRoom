@@ -6,6 +6,15 @@
     border-bottom: 1px solid #3a4a55;
   }
   
+  .icon {
+    border:3px solid rgb(255, 255, 255);    
+    height:50px;
+    border-radius:50%;
+    -moz-border-radius:50%;
+    -webkit-border-radius:50%;
+    width:50px;
+  }
+  
   .item:hover {
     background-color: #3a4a55;
   }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Chat } from '../../types/chatTypes';
 import MessageItem from './MessageItem.tsx';
 import styles from './MessageList.module.css';
@@ -14,9 +14,25 @@ const MessageList: React.FC<MessageListProps> = ({ chatroom }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatroom?.messages]);
 
+  const getRandomColor = (): string => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+  
+  const [bgColor, setBgColor] = useState<string>("");
+
+  useEffect(() => {
+    setBgColor(getRandomColor());
+  }, [chatroom?.roomId]);
+
+
   return (
     <div className={styles.messageList}>
-      {chatroom?.messages?.map((message, index ) => <MessageItem key={`${message}${index}`} message={message} />)}
+      {chatroom?.messages?.map((message, index ) => <MessageItem key={`${message}${index}`} avatarColor={bgColor} message={message} />)}
   
       <div ref={messagesEndRef} />
     </div>
