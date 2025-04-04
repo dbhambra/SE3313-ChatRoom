@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 
 type OnMessageCallback = (msg: string) => void;
 
-const useWebSocket = (url: string, onMessage: OnMessageCallback) => {
+const useWebSocket = (url: string | null, onMessage: OnMessageCallback) => {
   const socket = useRef<WebSocket | null>(null);
 
   useEffect(() => {

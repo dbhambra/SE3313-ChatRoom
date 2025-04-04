@@ -9,6 +9,6 @@ export interface User {
   }
   
   export interface Chat {
-    roomId: string;
+    roomId: number;
     messages: Message[];
   }

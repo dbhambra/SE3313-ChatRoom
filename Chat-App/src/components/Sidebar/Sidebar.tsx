@@ -14,7 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({chatrooms, onSelectChat }) => {
       <div className={styles.header}>ChatRooms</div>
       <div className={styles.chatList}>
         {chatrooms.map((chatroom) => (
-          <SidebarItem key={chatroom.roomId} chatroom={chatroom} onSelect={() => onSelectChat(chatroom)} />
+          <SidebarItem key={chatroom?.roomId} chatroom={chatroom} onSelect={() => onSelectChat(chatroom)} />
         ))}
       </div>
     </div>

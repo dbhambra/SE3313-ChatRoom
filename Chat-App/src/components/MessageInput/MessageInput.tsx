@@ -5,8 +5,9 @@ import SendIcon from '@mui/icons-material/Send';
 import styles from './MessageInput.module.css';
 
 interface MessageInputProps {
-  chatId: string;
+  chatId: number | null | undefined;
 }
+
 
 const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   const [message, setMessage] = useState('');

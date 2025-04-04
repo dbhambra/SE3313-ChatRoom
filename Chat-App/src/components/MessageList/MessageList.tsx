@@ -4,7 +4,7 @@ import MessageItem from './MessageItem.tsx';
 import styles from './MessageList.module.css';
 
 interface MessageListProps {
-  chatroom: Chat;
+  chatroom: Chat | null;
 }
 
 const MessageList: React.FC<MessageListProps> = ({ chatroom }) => {
@@ -12,11 +12,11 @@ const MessageList: React.FC<MessageListProps> = ({ chatroom }) => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatroom.messages]);
+  }, [chatroom?.messages]);
 
   return (
     <div className={styles.messageList}>
-      {chatroom.messages?.map((message, index ) => <MessageItem key={`${message}${index}`} message={message} />)}
+      {chatroom?.messages?.map((message, index ) => <MessageItem key={`${message}${index}`} message={message} />)}
   
       <div ref={messagesEndRef} />
     </div>
