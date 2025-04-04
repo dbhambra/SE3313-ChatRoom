@@ -290,7 +290,18 @@ void message_type_actions(const char &message_type,int &client_socket,vector<str
 			    mtx.unlock();
 			    break;
 		    }
-
+            case '5':
+		{ // 5;<room_num>
+			stringstream message;
+			int available_rooms;
+			int room_num = stoi(split_str[1].c_str());
+			mtx.lock();
+			available_rooms = check_room(room_num);
+			mtx.unlock();
+			message << "4;" << available_rooms;
+			send_message(client_socket,message.str());
+			break;
+		}
             case '7'://Leave Room (receive 7;<Room Number>)
 		    {
                 int other;
