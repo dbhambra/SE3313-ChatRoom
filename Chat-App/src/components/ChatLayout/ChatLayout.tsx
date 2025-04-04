@@ -114,10 +114,13 @@ const ChatLayout: React.FC = () => {
 
   const handleUsernameSubmit = (name: string) => {
     setUsername(name);
+  
     setTimeout(() => {
+      sendToServer(send, 2, name);
       sendToServer(send, 2, name);
     }, 100);
   };
+  
 
   return (
     <div className={styles.container}>
