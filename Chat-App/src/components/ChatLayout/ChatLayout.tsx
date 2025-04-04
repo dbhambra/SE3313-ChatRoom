@@ -3,8 +3,9 @@ import Sidebar from '../Sidebar/Sidebar.tsx';
 import ChatHeader from '../ChatHeader/ChatHeader.tsx';
 import MessageList from '../MessageList/MessageList.tsx';
 import MessageInput from '../MessageInput/MessageInput.tsx';
-import { Chat } from '../../chatTypes.ts';
+import { Chat } from '../../types/chatTypes.ts';
 import styles from './ChatLayout.module.css';
+import useWebSocket from '../hooks/useWebSocket';
 
 const ChatLayout: React.FC = () => {
 
