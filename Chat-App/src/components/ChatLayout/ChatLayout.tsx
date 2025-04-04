@@ -91,12 +91,21 @@ const ChatLayout: React.FC = () => {
     setSelectedChat(chat);
   };
 
+  const sendToServer = (send: (msg: string) => void, code: number, payload?: string) => {
+      const message = payload !== undefined ? `${code};${payload}` : `${code};`;
+      send(message);
+      console.log('Sent:', message);
+    };
+  
+
   const handleUsernameSubmit = (name: string) => {
     setUsername(name);
+  
     setTimeout(() => {
-      send?.(`2;${name}`);
+      sendToServer(send, 2, name);
     }, 100);
   };
+  
 
   return (
     <div className={styles.container}>
