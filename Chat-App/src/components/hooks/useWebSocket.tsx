@@ -6,6 +6,8 @@ const useWebSocket = (url: string, onMessage: OnMessageCallback) => {
   const socket = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    if (!url) return; // Don't connect if no URL is provided
+    
     const ws = new WebSocket(url);
     socket.current = ws;
 
