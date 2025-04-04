@@ -5,47 +5,47 @@ import MessageList from '../MessageList/MessageList.tsx';
 import MessageInput from '../MessageInput/MessageInput.tsx';
 import { Chat } from '../../chatTypes.ts';
 import styles from './ChatLayout.module.css';
+import useWebSocket from '../hooks/useWebSocket.tsx';
+
 
 const ChatLayout: React.FC = () => {
 
+  const send = useWebSocket('ws://localhost:8080', handleServerMessage);
   
   const dummyChats: Chat[] = [
     {
-      id: 'chat1',
-      participants: [
-        { id: 'currentUser', name: 'You', avatarUrl: 'https://via.placeholder.com/50' },
-        { id: 'user2', name: 'Alice Winnie', avatarUrl: 'https://via.placeholder.com/50' },
-      ],
+      roomId: 0,
       messages: [
         {
-          id: 'msg1',
           text: 'Hello!',
-          sender: { id: 'user2', name: 'Alice Winnie', avatarUrl: 'https://via.placeholder.com/50' },
+          nameId: 'Alice',
           timestamp: new Date().toISOString(),
         },
         {
-          id: 'msg2',
           text: 'Hi there!',
-          sender: { id: 'currentUser', name: 'You', avatarUrl: 'https://via.placeholder.com/50' },
+          nameId: 'Tahama',
           timestamp: new Date().toISOString(),
         },
       ],
-      status: 1
     },
     {
-      id: 'chat2',
-      participants: [
-        { id: 'currentUser', name: 'You', avatarUrl: 'https://via.placeholder.com/50' },
-        { id: 'user3', name: 'Josh Roland', avatarUrl: 'https://via.placeholder.com/51' },
+      roomId: 1,
+      messages: [
+        {
+          text: 'I am really Hungry!',
+          nameId: 'Justin',
+          timestamp: new Date().toISOString(),
+        },
+        {
+          text: 'Me too! Pizza?',
+          nameId: 'Tahama',
+          timestamp: new Date().toISOString(),
+        },
       ],
-      messages: [],
-      status: 0
-    }
+    },
   ];
 
-  const messages: Chat[] = [];
-
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(messages[0]);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(dummyChats);
 
   const handleSelectChat = (chat: Chat) => {
     setSelectedChat(chat);
@@ -53,13 +53,13 @@ const ChatLayout: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Sidebar chats={dummyChats} onSelectChat={handleSelectChat} />
+      <Sidebar chatrooms={dummyChats} onSelectChat={handleSelectChat} />
       <div className={styles.chatArea}>
         {selectedChat ? (
           <>
-            <ChatHeader chat={selectedChat} />
-            <MessageList chat={selectedChat} />
-            <MessageInput chatId={selectedChat.id} />
+            <ChatHeader chatroom={selectedChat} />
+            <MessageList chatroom={selectedChat} />
+            <MessageInput chatId={selectedChat.roomId} />
           </>
         ) : (
           <div className={styles.placeholder}>Select a chat to start messaging</div>
@@ -89,7 +89,5 @@ const handleServerMessage = (raw: string) => {
       console.log('[Server] Unknown type:', type);
   }
 };
-
-const send = useWebSocket('ws://localhost:8080', handleServerMessage);
 
 export default ChatLayout;
