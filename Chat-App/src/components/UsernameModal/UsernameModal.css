@@ -1,0 +1,34 @@
+/* UsernameModal.css */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+  }
+  
+  .modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+  }
+  
+  .modal input {
+    padding: 0.5rem;
+    margin-top: 1rem;
+    width: 80%;
+    font-size: 1rem;
+  }
+  
+  .modal button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+  
