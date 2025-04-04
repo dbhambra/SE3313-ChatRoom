@@ -9,11 +9,11 @@ interface MessageItemProps {
 
 const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   // Replace 'currentUser'actual current user id
-  const isOwnMessage = message.sender.id === 'currentUser';
+  const isOwnMessage = message.nameId === 'Tahama';
 
   return (
     <div className={`${styles.messageItem} ${isOwnMessage ? styles.own : styles.other}`}>
-      {!isOwnMessage && <Avatar imageUrl={message.sender.avatarUrl} size={60} />}
+      {!isOwnMessage && <Avatar username={message.nameId} />}
       <div className={styles.bubble}>
         <div className={styles.text}>{message.text}</div>
         <div className={styles.timestamp}>

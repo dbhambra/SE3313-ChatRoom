@@ -27,7 +27,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
   };
 
   return (
-    <div className={styles.inputContainer}>
+  <>
+    {chatId != undefined && <div className={styles.inputContainer}>
       <TextField
         variant="outlined"
         placeholder="Type a message..."
@@ -41,7 +42,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ chatId }) => {
       <IconButton color="primary" onClick={handleSend} className={styles.sendButton}>
         <SendIcon />
       </IconButton>
-    </div>
+    </div>}
+  </>
   );
 };
 
