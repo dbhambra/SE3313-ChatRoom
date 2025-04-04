@@ -65,6 +65,26 @@ const ChatLayout: React.FC = () => {
         },
       ],
     },
+    {
+      roomId: 2,
+      messages: [
+        {
+          text: 'Lets go tomorrow to the party.',
+          nameId: 'Xavier',
+          timestamp: new Date().toISOString(),
+        },
+        {
+          text: 'Nah, ima just stay home lol',
+          nameId: 'Tahama',
+          timestamp: new Date().toISOString(),
+        },
+        {
+          text: 'Suit yourself :/',
+          nameId: 'Xavier',
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    },
   ];
 
   const handleSelectChat = (chat: Chat) => {

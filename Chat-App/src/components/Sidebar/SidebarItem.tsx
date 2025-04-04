@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Chat } from '../../types/chatTypes';
 import Avatar from '../Avatar/Avatar.tsx';
 import styles from './SidebarItem.module.css';
-import { ChatStatus, FULL_ROOM } from '../../constants/constants.tsx';
+import { FULL_ROOM } from '../../constants/constants.tsx';
 import { Alert } from '@mui/material';
+import { MdGroups } from "react-icons/md";
 
 
 interface SidebarItemProps {
@@ -34,6 +35,7 @@ const onRoomFull = () => {
   return (
     <>
     <div className={styles.item} onClick={status !== FULL_ROOM ? onSpaceAvaliable : onRoomFull}>
+      <MdGroups className={styles.icon}/>
       <div className={styles.info}>
         <div className={styles.name}>{`Room ${chatroomId}`}</div>
         <div className={status !== FULL_ROOM ? styles.status_open : styles.status_chatting }>{status}</div>
