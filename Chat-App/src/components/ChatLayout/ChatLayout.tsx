@@ -70,4 +70,26 @@ const ChatLayout: React.FC = () => {
   );
 };
 
+const handleServerMessage = (raw: string) => {
+  const [type, payload] = raw.split(';');
+
+  switch (type) {
+    case '1':
+      console.log('[Server] Message received:', payload);
+      // TODO: Append to message list
+      break;
+    case '2':
+      console.log('[Server] Successfully joined room:', payload);
+      break;
+    case '3':
+      alert('[Server] Room full.');
+      break;
+    // ... handle other cases (4–10)
+    default:
+      console.log('[Server] Unknown type:', type);
+  }
+};
+
+const send = useWebSocket('ws://localhost:8080', handleServerMessage);
+
 export default ChatLayout;
