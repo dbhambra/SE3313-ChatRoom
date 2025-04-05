@@ -191,7 +191,6 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
         }
         case '2': {
             add_socket_name(socket, parts[1]);
-            printf("CLIENT: #%d is connected as %s",client_socket,split_str[1]);
             send_message(socket, "Successfully logged in.");
             break;
         }
@@ -208,15 +207,15 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             int room_num = stoi(parts[1]);
             int space = check_room(room_num);
             if (space > 0) {
-                lock_guard<mutex> lock(room_mtx);
-                if (rooms[room_num - 1].first == 0)
-                    rooms[room_num - 1].first = socket;
-                else
-                    rooms[room_num - 1].second = socket;
-                send_message(socket, "2");
-                lock_guard<mutex> lock2(client_mtx);
-                active_sockets.push_back(socket);
-                printf("%s has Joined Room #%d",get_name_from_socket(client_socket),room_num);
+                {
+                    scoped_lock lock(room_mtx,client_mtx);
+                    if (rooms[room_num - 1].first == 0)
+                        rooms[room_num - 1].first = socket;
+                    else
+                        rooms[room_num - 1].second = socket;
+                    active_sockets.push_back(socket);
+                }
+                send_message(socket, "2"); 
             } else {
                 send_message(socket, "3");
             }
@@ -235,7 +234,7 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             int room = get_room(socket);
             string name = get_name_from_socket(socket);
             {
-                lock_guard<mutex> lock(room_mtx);
+                scoped_lock(room_mtx,client_mtx);
                 if (rooms[room - 1].first == socket) {
                     rooms[room - 1].first = 0;
                     other = rooms[room - 1].second;
@@ -243,9 +242,6 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
                     rooms[room - 1].second = 0;
                     other = rooms[room - 1].first;
                 }
-            }
-            {
-                lock_guard<mutex> lock(client_mtx);
                 active_sockets.erase(remove(active_sockets.begin(), active_sockets.end(), socket), active_sockets.end());
             }
             stringstream msg;
