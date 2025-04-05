@@ -1,8 +1,9 @@
 import socket
 
 # Server details
-SERVER_HOST = '127.0.0.1'  # Server's IP address (localhost)
-SERVER_PORT = 1000         # Port number (make sure it matches the server's port)
+#SERVER_HOST = '127.0.0.1'  # Server's IP address (localhost)
+SERVER_HOST = '172.30.171.229'
+SERVER_PORT = 5006         # Port number (make sure it matches the server's port)
 
 def main():
     # Create a TCP/IP socket

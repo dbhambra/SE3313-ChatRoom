@@ -15,11 +15,14 @@
 #include <vector>
 #include <utility>
 #include <condition_variable>
-
+#include <queue>
+#include <memory>
+#include <atomic>
 
 #define PORT 5006
 #define SERVER_BACKLOG 1
 #define BUFFER_SIZE  4096
+#define THREAD_POOL_SIZE 10
 
 using namespace std;
 
@@ -42,11 +45,14 @@ int client_count = 0;
 
 
 
-mutex mtx;//Mutex
-condition_variable cv;
+mutex queue_mtx,mtx;//Mutex
+queue<int> client_queue;
+atomic<bool> server_running(true);
+condition_variable queue_cv;
 unordered_map<string,int> client_sockets;//Map for all clients and their respective sokets
 vector<pair<int,int>> rooms(10);//10 breakout rooms with a capacity of 2 people only
 vector<int> active_sockets(20);
+
 
 
 int main(void){
@@ -66,8 +72,8 @@ int main(void){
     memset(&server_addr,0,sizeof(server_addr));
 
     server_addr.sin_family = AF_INET;
-    //server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    //server_addr.sin_addr.s_addr = inet_addr("0.0.0.0");
     server_addr.sin_port = htons(PORT);
 
     if (bind(server_socket,(sockaddr*)&server_addr,sizeof(server_addr)) == -1){
@@ -78,26 +84,66 @@ int main(void){
         handle_error("listen() error");
     }
 
-    while (1) {
+
+
+    // Create thread pool
+    vector<thread> thread_pool;
+    for(int i = 0; i < THREAD_POOL_SIZE; ++i) {
+        thread_pool.emplace_back([] {
+            while (server_running) {
+                int client = -1;
+                
+                // Wait for work
+                {
+                    unique_lock<mutex> lock(queue_mtx);
+                    queue_cv.wait(lock, [] { 
+                        return !client_queue.empty() || !server_running; 
+                    });
+
+                    if (!server_running) return;
+
+                    if (!client_queue.empty()) {
+                        client = client_queue.front();
+                        client_queue.pop();
+                    }
+                }
+                // Handle client if we got one
+                if (client != -1) {
+                    handle_connection(client);
+                }
+            }
+        });
+    }
+
+
+
+
+
+    while (server_running) {
         printf("Waiting for connections...\n");
         client_addr_size = sizeof(client_addr);
         client_socket = accept(server_socket,(struct sockaddr*)&client_addr,&client_addr_size);
-        if (client_socket == -1){
-            handle_error("accept() failed!");
+        printf("%d\n",client_socket);
+	    if (client_socket == -1){    
+            if(server_running) handle_error("accept() failed!");
+            break;
         }
 
-        mtx.lock();
-        client_count ++;
-        mtx.unlock();
+        {
+            lock_guard<mutex> lock(queue_mtx);
+            client_queue.push(client_socket);
+        }
 
-
-        thread th(handle_connection,client_socket);
-        //if(th.joinable()){
-        //    th.join();
-        //}
-        th.detach();
+        queue_cv.notify_one();
         
     }
+    
+    server_running = false;
+    queue_cv.notify_all();
+    for(auto& t: thread_pool) {
+        if(t.joinable()) t.join(); 
+    }
+
     close(server_socket);
     return 0;
 
@@ -127,12 +173,12 @@ void handle_connection(int client_socket){
             // Process the message
             printf("Received: %s\n", message.c_str());
         	vector<string> split_str = splitString(message.c_str(),';');
-		message_type_actions(message[0],client_socket,split_str);		
+		    message_type_actions(message[0],client_socket,split_str);		
 		//printf("Message Type: %c\n",message[0]);
 		//for(int i=0;i<split_str.size();i++){
 		//	printf("%s\n",split_str[i].c_str());
 		//}
-	}
+	    }
         close(client_socket);
 }
 
@@ -228,19 +274,27 @@ void message_type_actions(const char &message_type,int &client_socket,vector<str
             int sender = client_socket;
             mtx.lock();	      
             int room = get_room(client_socket);
-            if(rooms[room-1].first==client_socket){
+            //cout << "IDK" <<endl;
+	    if(rooms[room-1].first==client_socket){
                 receiver = rooms[room-1].second;
             }
             else{
                 receiver = rooms[room-1].first;
             }
+	    //cout << "TOAST" << endl;
+	    cout << client_socket << endl;
 	    stringstream message;
-	    message << get_name_from_socket(client_socket) << ";" << split_str[1];
-            //sprintf(message,"%s:%s",get_name_from_socket(client_socket),split_str[1]);         
-			mtx.unlock();
-            send_message(sender,message.str());
-            send_message(receiver,message.str());
-			break;
+	    message << get_name_from_socket(client_socket) << ":" << split_str[1];
+            
+	    //printf("%s:%s\n",get_name_from_socket(client_socket).c_str(),split_str[1].c_str());         
+	    mtx.unlock();
+	    if(sender > 0){
+            	send_message(sender,message.str());
+	    }
+	    if(receiver > 0){
+		send_message(receiver,message.str());
+	    }
+		break;
 		}
             case '2'://New User connected to server get the nickname (receive 2;<nickname>)
 		{
