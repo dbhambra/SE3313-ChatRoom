@@ -19,33 +19,27 @@
 #include <memory>
 #include <atomic>
 
+
+#include "socket_server.h"
+#include "logic.h"
+
 #define PORT 5006
 #define SERVER_BACKLOG 1
 #define BUFFER_SIZE  4096
-#define THREAD_POOL_SIZE 10
+#define THREAD_POOL_SIZE NUM_ROOMS*2
 
 using namespace std;
 
-mutex queue_mtx, client_mtx, room_mtx;
+mutex queue_mtx,client_mtx,room_mtx;
 condition_variable queue_cv;
 atomic<bool> server_running(true);
 
 queue<int> client_queue;
-unordered_map<string, int> client_sockets;
-vector<pair<int, int>> rooms(10);
 vector<int> active_sockets(20);
+unordered_map<string,int> client_sockets;
+vector<pair<int,int>> rooms(NUM_ROOMS);
 
-void handle_connection(int);
-void send_message(int, const string&);
-void admin_send_all_message(const string&);
-void handle_error(const string&);
-void add_socket_name(int, const string&);
-string get_name_from_socket(int);
-int get_socket_from_name(const string&);
-vector<string> split_string(const string&, char);
-int check_room(int);
-void message_type_actions(char, int&, vector<string>&);
-int get_room(int);
+
 
 int main() {
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -114,13 +108,7 @@ void handle_error(const string& msg) {
     exit(EXIT_FAILURE);
 }
 
-vector<string> split_string(const string& str, char delimiter) {
-    vector<string> result;
-    stringstream ss(str);
-    string item;
-    while (getline(ss, item, delimiter)) result.push_back(item);
-    return result;
-}
+
 
 void send_message(int socket, const string& msg) {
     uint32_t len = htonl(msg.length());
@@ -128,28 +116,7 @@ void send_message(int socket, const string& msg) {
     send(socket, msg.c_str(), msg.length(), 0);
 }
 
-void add_socket_name(int socket, const string& name) {
-    lock_guard<mutex> lock(client_mtx);
-    if (client_sockets.count(name)) {
-        send_message(socket, "Name already in use.");
-        close(socket);
-    } else {
-        client_sockets[name] = socket;
-    }
-}
 
-string get_name_from_socket(int socket) {
-    lock_guard<mutex> lock(client_mtx);
-    for (const auto& [name, sock] : client_sockets) {
-        if (sock == socket) return name;
-    }
-    return "";
-}
-
-int get_socket_from_name(const string& name) {
-    lock_guard<mutex> lock(client_mtx);
-    return client_sockets[name];
-}
 
 void admin_send_all_message(const string& msg) {
     lock_guard<mutex> lock(client_mtx);
@@ -158,21 +125,6 @@ void admin_send_all_message(const string& msg) {
     }
 }
 
-int check_room(int room_num) {
-    lock_guard<mutex> lock(room_mtx);
-    int count = 0;
-    if (rooms[room_num - 1].first == 0) count++;
-    if (rooms[room_num - 1].second == 0) count++;
-    return count;
-}
-
-int get_room(int socket) {
-    lock_guard<mutex> lock(room_mtx);
-    for (int i = 0; i < rooms.size(); i++) {
-        if (rooms[i].first == socket || rooms[i].second == socket) return i + 1;
-    }
-    return 0;
-}
 
 void message_type_actions(char type, int& socket, vector<string>& parts) {
     switch (type) {
@@ -190,9 +142,14 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             break;
         }
         case '2': {
-            add_socket_name(socket, parts[1]);
-            send_message(socket, "Successfully logged in.");
-            break;
+            int res = add_socket_name(socket, parts[1]);
+	    if (res == 1) {
+            	send_message(socket, "21;Successfully logged in.");
+	    }
+	    else{
+	    	send_message(socket,"20;Name already in use try again");
+	    }
+	    break;
         }
         case '3': {
             string name = get_name_from_socket(socket);
