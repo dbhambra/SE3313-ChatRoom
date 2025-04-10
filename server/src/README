@@ -1,0 +1,17 @@
+TO RUN
+
+MAKE SURE CMAKE IS INSTALLED
+linux/unix: sudo apt install CMAKE
+
+COMPILATION
+inside src ->
+mkdir build && cd build
+cmake ..
+make -> the executable will be created in the build dir
+
+TO RUN
+go inside build dir -> cd build
+./socket_server
+
+
+
