@@ -1,3 +1,4 @@
+//FILE INCLUDING GENERAL LOGIC THAT ARE ALWAYS USED
 #include "logic.h"
 #include <unordered_map>
 #include <vector>
@@ -7,13 +8,13 @@
 #include <sstream>
 using namespace std;
 
-
+//DEFINING THESE ARE DECLARED SOMEWHERE ELSE
 extern mutex client_mtx, room_mtx;
 extern unordered_map<string,int> client_sockets;
 extern vector<pair<int,int>> rooms;
 
 
-
+//GET NAME FORM SOCKET FROM THE MAP
 string get_name_from_socket(int socket) {
     lock_guard<mutex> lock(client_mtx);
     for (const auto& [name, sock] : client_sockets) {
@@ -22,11 +23,12 @@ string get_name_from_socket(int socket) {
     return "";
 }
 
+//GET SOCKET FROM NAME FORM THE MAP
 int get_socket_from_name(const string& name) {
     lock_guard<mutex> lock(client_mtx);
     return client_sockets[name];
 }
-
+//ADD A NEW NAME ASSOCIATED WITH SOCKET CONNECTIOn
 int add_socket_name(int socket, const string& name) {
     lock_guard<mutex> lock(client_mtx);
     if (client_sockets.count(name)) {
@@ -38,7 +40,7 @@ int add_socket_name(int socket, const string& name) {
 	return 1;//SUCCESS JOIN
     }
 }
-
+//CHECK ROOM AVAILABILITY FROM THE MAP
 int check_room(int room_num) {
     lock_guard<mutex> lock(room_mtx);
     int count = 0;
@@ -47,6 +49,7 @@ int check_room(int room_num) {
     return count;
 }
 
+//GET THE ROOM CURRENT SOCKET IS IN
 int get_room(int socket) {
     lock_guard<mutex> lock(room_mtx);
     for (int i = 0; i < rooms.size(); i++) {
@@ -54,7 +57,7 @@ int get_room(int socket) {
     }
     return 0;
 }
-
+//GENERAL STRING SPLITTER FUNCTION, RETURNS THE SPLIT BASED OFF DELIMITER AS VECTOR
 vector<string> split_string(const string& str, char delimiter) {
     vector<string> result;
     stringstream ss(str);
