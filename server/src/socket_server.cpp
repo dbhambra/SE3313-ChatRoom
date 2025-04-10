@@ -161,7 +161,9 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
                 lock_guard<mutex> lock(client_mtx);
                 client_sockets.erase(name);
             }
+            remove_client_from_map(name);
             close(socket);
+            cout << "Removed: " << name << endl;
             break;
         }
         case '4': {//join room

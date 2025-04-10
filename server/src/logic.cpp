@@ -40,6 +40,13 @@ int add_socket_name(int socket, const string& name) {
 	return 1;//SUCCESS JOIN
     }
 }
+
+//REMOVING NAME FORM SOCKET MAP
+void remove_client_from_map(const string &name){
+    lock_guard<mutex> lock(client_mtx);
+    client_sockets.erase(name);
+}
+
 //CHECK ROOM AVAILABILITY FROM THE MAP
 int check_room(int room_num) {
     lock_guard<mutex> lock(room_mtx);

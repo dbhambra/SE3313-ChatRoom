@@ -16,5 +16,6 @@ string get_name_from_socket(int);//RETURN NAME FROM SOCKET ID
 int get_socket_from_name(string);//RETURN SOCKET ID FROM NICKNAME
 int check_room(int);//CHECK ROOM AVAILABILITY
 int get_room(int);//RETURN ROOM BASED OFF SOCKET ID
+void remove_client_from_map(const string&);//REMOVE CLIENT FORM LIST
 void reset_state();//RESET STATE USED FOR TESTING
 
