@@ -19,10 +19,10 @@
 #include <memory>
 #include <atomic>
 
-
+//USER DEFINED INLCUDE
 #include "socket_server.h"
 #include "logic.h"
-
+//DEFINITIONS
 #define PORT 5006
 #define SERVER_BACKLOG 1
 #define BUFFER_SIZE  4096
@@ -30,10 +30,11 @@
 
 using namespace std;
 
+//SYNCRHONIZATION DECLARATION
 mutex queue_mtx,client_mtx,room_mtx;
 condition_variable queue_cv;
 atomic<bool> server_running(true);
-
+//DATA STRUCT DECLARATIONS
 queue<int> client_queue;
 vector<int> active_sockets(20);
 unordered_map<string,int> client_sockets;
@@ -42,6 +43,7 @@ vector<pair<int,int>> rooms(NUM_ROOMS);
 
 
 int main() {
+    //SOCKET SERVER INTIIALIZATION
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1) handle_error("socket() failed");
 
@@ -51,14 +53,15 @@ int main() {
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons(PORT);
-
+    //SERVER BIND
     if (bind(server_socket, (sockaddr*)&server_addr, sizeof(server_addr)) == -1)
         handle_error("bind() failed");
 
     printf("Server is running on port %d\n", PORT);
+    //START LISTENING
     if (listen(server_socket, SERVER_BACKLOG) == -1)
         handle_error("listen() error");
-
+    //INITIALZIE THREAD POOL
     vector<thread> thread_pool;
     for (int i = 0; i < THREAD_POOL_SIZE; ++i) {
         thread_pool.emplace_back([] {
@@ -66,12 +69,13 @@ int main() {
                 int client = -1;
                 {
                     unique_lock<mutex> lock(queue_mtx);
-                    queue_cv.wait(lock, [] {
+                    queue_cv.wait(lock, [] {//UNLOCK WHEN CONNECTION COMES
                         return !client_queue.empty() || !server_running;
                     });
 
-                    if (!server_running) return;
-                    if (!client_queue.empty()) {
+                    if (!server_running) return;//KILL FLAG
+                    if (!client_queue.empty()) {//IF THERE IS STUFF IN QUEUE THEN THREAD TAKES THE SOCKET
+                        //FIRST COME FIRST SERVER QUEUE
                         client = client_queue.front();
                         client_queue.pop();
                     }
@@ -81,7 +85,7 @@ int main() {
         });
     }
 
-    while (server_running) {
+    while (server_running) {//WAITING FOR KILL FLAG, on new connection notify threads
         printf("Waiting for connections...\n");
         int client_socket = accept(server_socket, (struct sockaddr*)&client_addr, &client_addr_size);
         if (client_socket == -1) {
@@ -96,8 +100,8 @@ int main() {
     }
 
     server_running = false;
-    queue_cv.notify_all();
-    for (auto& t : thread_pool) if (t.joinable()) t.join();
+    queue_cv.notify_all();//notify threads
+    for (auto& t : thread_pool) if (t.joinable()) t.join();//join threads
 
     close(server_socket);
     return 0;
@@ -109,7 +113,7 @@ void handle_error(const string& msg) {
 }
 
 
-
+//Send messages based off socket
 void send_message(int socket, const string& msg) {
     uint32_t len = htonl(msg.length());
     send(socket, &len, sizeof(len), 0);
@@ -117,7 +121,7 @@ void send_message(int socket, const string& msg) {
 }
 
 
-
+//send message to all cclients
 void admin_send_all_message(const string& msg) {
     lock_guard<mutex> lock(client_mtx);
     for (const auto& sock : active_sockets) {
@@ -125,10 +129,10 @@ void admin_send_all_message(const string& msg) {
     }
 }
 
-
+//handle incoming data
 void message_type_actions(char type, int& socket, vector<string>& parts) {
     switch (type) {
-        case '1': {
+        case '1': {//Message
             int room = get_room(socket);
             int receiver;
             {
@@ -141,7 +145,7 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             if (receiver != 0) send_message(receiver, msg.str());
             break;
         }
-        case '2': {
+        case '2': {//New connection
             int res = add_socket_name(socket, parts[1]);
 	    if (res == 1) {
             	send_message(socket, "21;Successfully logged in.");
@@ -151,7 +155,7 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
 	    }
 	    break;
         }
-        case '3': {
+        case '3': {//Leave app
             string name = get_name_from_socket(socket);
             {
                 lock_guard<mutex> lock(client_mtx);
@@ -160,7 +164,7 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             close(socket);
             break;
         }
-        case '4': {
+        case '4': {//join room
             int room_num = stoi(parts[1]);
             int space = check_room(room_num);
             if (space > 0) {
@@ -172,13 +176,13 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
                         rooms[room_num - 1].second = socket;
                     active_sockets.push_back(socket);
                 }
-                send_message(socket, "2"); 
+                send_message(socket, "2"); //success
             } else {
-                send_message(socket, "3");
+                send_message(socket, "3");//unssucess/full
             }
             break;
         }
-        case '5': {
+        case '5': {//room query
             int room_num = stoi(parts[1]);
             int space = check_room(room_num);
             stringstream msg;
@@ -186,7 +190,7 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             send_message(socket, msg.str());
             break;
         }
-        case '7': {
+        case '7': {//leave room
             int other;
             int room = get_room(socket);
             string name = get_name_from_socket(socket);
@@ -207,13 +211,13 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
             if (other != 0) send_message(other, msg.str());
             break;
         }
-        case '8': {
+        case '8': {//admin privledge send to everyone active chat
             admin_send_all_message(parts[1]);
             break;
         }
     }
 }
-
+//handles incoming data
 void handle_connection(int socket) {
     while (true) {
         uint32_t len;
