@@ -162,8 +162,8 @@ void message_type_actions(char type, int& socket, vector<string>& parts) {
                 client_sockets.erase(name);
             }
             remove_client_from_map(name);
+	    cout << "Removed: " << name << endl;
             close(socket);
-            cout << "Removed: " << name << endl;
             break;
         }
         case '4': {//join room
