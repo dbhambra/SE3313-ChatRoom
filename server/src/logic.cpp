@@ -9,13 +9,13 @@
 using namespace std;
 
 //DEFINING THESE ARE DECLARED SOMEWHERE ELSE
-extern mutex client_mtx, room_mtx;
-extern unordered_map<string,int> client_sockets;
-extern vector<pair<int,int>> rooms;
+//extern mutex client_mtx, room_mtx;
+//extern unordered_map<string,int> client_sockets;
+//extern vector<pair<int,int>> rooms;
 
 
 //GET NAME FORM SOCKET FROM THE MAP
-string get_name_from_socket(int socket) {
+string get_name_from_socket(const int& socket) {
     lock_guard<mutex> lock(client_mtx);
     for (const auto& [name, sock] : client_sockets) {
         if (sock == socket) return name;
@@ -71,4 +71,12 @@ vector<string> split_string(const string& str, char delimiter) {
     string item;
     while (getline(ss, item, delimiter)) result.push_back(item);
     return result;
+}
+//USED FOR TESTING TO RESET ALL
+void reset_state() {
+    lock_guard<mutex> l1(client_mtx);
+    lock_guard<mutex> l2(room_mtx);
+    client_sockets.clear();
+    rooms = vector<pair<int, int>>(10);
+    //client_sockets = unordered_map<string,int>(20);
 }

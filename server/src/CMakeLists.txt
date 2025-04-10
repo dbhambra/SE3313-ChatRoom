@@ -18,3 +18,32 @@ set(HEADERS
 
 #Create the chat server executable
 add_executable(socket_server ${SOURCES} ${HEADERS})
+
+# ====================
+# Testing Setup
+# ====================
+enable_testing()
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/release-1.12.1.zip
+)
+
+# For Windows users to avoid runtime issues with Google Test
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(googletest)
+
+# Test target
+add_executable(chat_logic_tests
+    logic_unit_test.cpp
+    logic.cpp
+)
+
+target_link_libraries(chat_logic_tests
+    gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(chat_logic_tests)
