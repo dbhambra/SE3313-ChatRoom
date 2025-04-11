@@ -4,17 +4,17 @@ import { Chat } from '../../types/chatTypes';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
-  chats: Chat[];
-  onSelectChat: (chat: Chat) => void;
+  chatrooms: Chat[];
+  onSelectChat: (chatrooms: Chat) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ chats, onSelectChat }) => {
+const Sidebar: React.FC<SidebarProps> = ({chatrooms, onSelectChat }) => {
   return (
     <div className={styles.sidebar}>
-      <div className={styles.header}>Chats</div>
+      <div className={styles.header}>ChatRooms</div>
       <div className={styles.chatList}>
-        {chats.map((chat) => (
-          <SidebarItem key={chat.id} chat={chat} onSelect={() => onSelectChat(chat)} />
+        {chatrooms.map((chatroom) => (
+          <SidebarItem key={chatroom?.roomId} chatroom={chatroom} onSelect={() => onSelectChat(chatroom)} />
         ))}
       </div>
     </div>

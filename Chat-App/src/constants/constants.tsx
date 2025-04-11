@@ -1,1 +1,1 @@
-  export const ChatStatus = ['Open to chat','Currently chatting!'];
+  export const FULL_ROOM = '2/2';

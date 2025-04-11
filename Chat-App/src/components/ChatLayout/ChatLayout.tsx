@@ -1,71 +1,136 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../Sidebar/Sidebar.tsx';
 import ChatHeader from '../ChatHeader/ChatHeader.tsx';
 import MessageList from '../MessageList/MessageList.tsx';
 import MessageInput from '../MessageInput/MessageInput.tsx';
-import { Chat } from '../../chatTypes.ts';
+import UsernameModal from '../UsernameModal/UsernameModal.tsx';
+import useWebSocket from '../hooks/useWebSocket.tsx';
+import { Chat, Message } from '../../types/chatTypes.ts';
 import styles from './ChatLayout.module.css';
 
 const ChatLayout: React.FC = () => {
+  const [username, setUsername] = useState<string | null>(null);
+  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [chatrooms, setChatrooms] = useState<Chat[]>([]);
 
-  
-  const dummyChats: Chat[] = [
-    {
-      id: 'chat1',
-      participants: [
-        { id: 'currentUser', name: 'You', avatarUrl: 'https://via.placeholder.com/50' },
-        { id: 'user2', name: 'Alice Winnie', avatarUrl: 'https://via.placeholder.com/50' },
-      ],
-      messages: [
-        {
-          id: 'msg1',
-          text: 'Hello!',
-          sender: { id: 'user2', name: 'Alice Winnie', avatarUrl: 'https://via.placeholder.com/50' },
+  const handleServerMessage = (msg: { type: string; payload: string }) => {
+    const { type, payload } = msg;
+
+    switch (type) {
+      case '1':
+        if (!selectedChat) return;
+
+        const newMessage: Message = {
+          text: payload,
+          nameId: 'Server',
           timestamp: new Date().toISOString(),
-        },
-        {
-          id: 'msg2',
-          text: 'Hi there!',
-          sender: { id: 'currentUser', name: 'You', avatarUrl: 'https://via.placeholder.com/50' },
-          timestamp: new Date().toISOString(),
-        },
-      ],
-      status: 1
-    },
-    {
-      id: 'chat2',
-      participants: [
-        { id: 'currentUser', name: 'You', avatarUrl: 'https://via.placeholder.com/50' },
-        { id: 'user3', name: 'Josh Roland', avatarUrl: 'https://via.placeholder.com/51' },
-      ],
-      messages: [],
-      status: 0
+        };
+
+        setChatrooms(prevChats =>
+          prevChats.map(chat =>
+            chat.roomId === selectedChat.roomId
+              ? { ...chat, messages: [...chat.messages, newMessage] }
+              : chat
+          )
+        );
+        break;
+
+      case '2':
+        console.log('[Server] Successfully joined room:', payload);
+        break;
+
+      case '3':
+        alert('[Server] Room full.');
+        break;
+
+      case '4':
+        console.log('[Server] Room status:', payload === '0' ? 'Full' : 'Available');
+        break;
+
+      case '5':
+        console.log('[Server] Successfully left room');
+        break;
+
+      case '6':
+        console.log('[Server] Someone left the room:', payload);
+        break;
+
+      case '9':
+        console.log('[Server] Incoming request from client:', payload);
+        break;
+
+      case '10':
+        console.log('[Server] Waiting for other client to accept:', payload);
+        break;
+
+      default:
+        console.log('[Server] Unknown type:', payload);
     }
-  ];
+  };
 
-  const messages: Chat[] = [];
+  const { send } = useWebSocket(username ? 'ws://localhost:8080' : null, handleServerMessage);
 
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(messages[0]);
+  const sendToServer = (send: (msg: string) => void, code: number, payload?: string) => {
+    const message = payload !== undefined ? `${code};${payload}` : `${code};`;
+    send(message);
+    console.log('Sent:', message);
+  };
 
   const handleSelectChat = (chat: Chat) => {
     setSelectedChat(chat);
+    setTimeout(() => {
+      sendToServer(send, 4, `${chat.roomId + 1}`);
+    }, 100);
   };
+
+  const handleUsernameSubmit = (name: string) => {
+    setUsername(name);
+    setChatrooms([
+      {
+        roomId: 0,
+        messages: [],
+      },
+      {
+        roomId: 1,
+        messages: [],
+      },
+      {
+        roomId: 2,
+        messages: [],
+      },
+    ]);
+
+    setTimeout(() => {
+      sendToServer(send, 2, name);
+    }, 100);
+  };
+
+  // Periodically send 5;roomId every 3 seconds
+  useEffect(() => {
+    if (!username || chatrooms.length === 0) return;
+
+    const interval = setInterval(() => {
+      chatrooms.forEach(chat => {
+        sendToServer(send, 5, `${chat.roomId}`);
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [username, chatrooms, send]);
 
   return (
     <div className={styles.container}>
-      <Sidebar chats={dummyChats} onSelectChat={handleSelectChat} />
-      <div className={styles.chatArea}>
-        {selectedChat ? (
-          <>
-            <ChatHeader chat={selectedChat} />
-            <MessageList chat={selectedChat} />
-            <MessageInput chatId={selectedChat.id} />
-          </>
-        ) : (
-          <div className={styles.placeholder}>Select a chat to start messaging</div>
-          
-        )}
-      </div>
+      {!username && <UsernameModal onSubmit={handleUsernameSubmit} />}
+      {username && (
+        <>
+          <Sidebar chatrooms={chatrooms} onSelectChat={handleSelectChat} />
+          <div className={styles.chatArea}>
+            <ChatHeader chatroom={selectedChat} />
+            <MessageList chatroom={selectedChat} />
+            <MessageInput chatId={selectedChat?.roomId} send={send}/>
+          </div>
+        </>
+      )}
     </div>
   );
 };
