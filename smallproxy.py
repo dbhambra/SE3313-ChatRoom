@@ -2,7 +2,7 @@ import asyncio
 import websockets
 import struct
 
-TCP_HOST = '192.168.122.62'  # your TCP server's IP
+TCP_HOST = '192.168.56.101'  # your TCP server's IP
 TCP_PORT = 5006
 
 async def handle_connection(websocket):

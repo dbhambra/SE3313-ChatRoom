@@ -10,38 +10,44 @@ import { MdGroups } from "react-icons/md";
 interface SidebarItemProps {
   chatroom: Chat;
   onSelect: () => void;
+  isRoomFull: boolean;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ chatroom, onSelect }) => {
-  const chatroomId = chatroom?.roomId
-  const status  : string = "0/2";
 
-const [roomFullMessage, setRoomFullMessage] = useState<boolean>(false);
+const SidebarItem: React.FC<SidebarItemProps> = ({ chatroom, onSelect, isRoomFull }) => {
+  const chatroomId = chatroom?.roomId;
+  const statusText = isRoomFull ? "Room Full" : "";
 
+  useEffect(()=>{
+    if(statusText === "Room Full"){
+      setRoomFullMessage(true);
+    }
+  },[isRoomFull]);
 
-useEffect(() => {
-  setRoomFullMessage(false);
-}, [status])
-  
-const onSpaceAvaliable = () => {
+  const [roomFullMessage, setRoomFullMessage] = useState(false);
 
-  onSelect();
-}
-
-const onRoomFull = () => {
-  setRoomFullMessage(true);
-}
+  const onRoomClick = () => {
+    if (isRoomFull) {
+      setRoomFullMessage(true);
+    } else {
+      onSelect();
+    }
+  };
 
   return (
     <>
-    <div className={styles.item} onClick={status !== FULL_ROOM ? onSpaceAvaliable : onRoomFull}>
-      <MdGroups className={styles.icon}/>
-      <div className={styles.info}>
-        <div className={styles.name}>{`Room ${chatroomId}`}</div>
-        <div className={status !== FULL_ROOM ? styles.status_open : styles.status_chatting }>{status}</div>
+      <div className={styles.item} onClick={onRoomClick}>
+        <MdGroups className={styles.icon} />
+        <div className={styles.info}>
+          <div className={styles.name}>{`Room ${chatroomId}`}</div>
+          <div className={isRoomFull ? styles.status_chatting : styles.status_open}>
+            {statusText}
+          </div>
+        </div>
       </div>
-    </div>
-    {roomFullMessage && <Alert severity='error'>This room is full. Try again later or join a different room</Alert>}
+      {roomFullMessage && (
+        <Alert severity="error">This room is full. Try again later or join a different room.</Alert>
+      )}
     </>
   );
 };

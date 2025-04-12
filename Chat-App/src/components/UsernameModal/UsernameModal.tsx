@@ -4,9 +4,10 @@ import './UsernameModal.css';
 
 interface Props {
   onSubmit: (username: string) => void;
+  error: boolean;
 }
 
-const UsernameModal: React.FC<Props> = ({ onSubmit }) => {
+const UsernameModal: React.FC<Props> = ({ onSubmit, error}) => {
   const [input, setInput] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -29,6 +30,7 @@ const UsernameModal: React.FC<Props> = ({ onSubmit }) => {
             required
           />
           <button type="submit">Join Chat</button>
+          {error && <p className="error">This username is already taken!</p>}
         </form>
       </div>
     </div>

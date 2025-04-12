@@ -24,7 +24,7 @@ const useWebSocket = (url: string | null, onMessage?: (msg: ParsedMessage) => vo
       const [type, payload] = raw.split(';');
       const message = { type, payload };
 
-      console.log('[WebSocket] Received:', message);
+      //console.log('[WebSocket] Received:', message);
       onMessage?.(message);
     };
 

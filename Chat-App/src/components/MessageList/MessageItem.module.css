@@ -37,4 +37,20 @@
     color: #ffffff;
     opacity: 70%;
   }
+
+  .divider {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+    color: #888;
+    font-size: 0.8rem;
+    font-weight: bolder;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    letter-spacing: 0.5px;
+    padding-top: 50px;    
+    padding-bottom: 50px;
+    opacity: 70%;
+  }
   

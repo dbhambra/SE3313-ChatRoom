@@ -3,7 +3,7 @@ export interface User {
   }
   
   export interface Message {
-    nameId: string;
+    nameId: string | null;
     text: string;
     timestamp: string;
   }

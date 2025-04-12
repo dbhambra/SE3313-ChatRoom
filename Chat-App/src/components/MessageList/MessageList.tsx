@@ -5,9 +5,10 @@ import styles from './MessageList.module.css';
 
 interface MessageListProps {
   chatroom: Chat | null;
+  username: string;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ chatroom }) => {
+const MessageList: React.FC<MessageListProps> = ({ chatroom, username}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +33,7 @@ const MessageList: React.FC<MessageListProps> = ({ chatroom }) => {
 
   return (
     <div className={styles.messageList}>
-      {chatroom?.messages?.map((message, index ) => <MessageItem key={`${message}${index}`} avatarColor={bgColor} message={message} />)}
+      {chatroom?.messages?.map((message, index ) => <MessageItem key={`${message}${index}`} avatarColor={bgColor} message={message} username={username} />)}
   
       <div ref={messagesEndRef} />
     </div>
