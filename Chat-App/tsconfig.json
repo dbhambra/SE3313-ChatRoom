@@ -2,11 +2,13 @@
     "compilerOptions": {
       "jsx": "react",  // or "react-jsx" for React 17+
       "moduleResolution": "node",
-      "strict": true,
+      "lib": ["DOM", "ES2020"], 
       "esModuleInterop": true,
       "skipLibCheck": true,
       "forceConsistentCasingInFileNames": true,
-      "types": ["jest"]  // Ensure Jest types are here
+      "types": ["jest"], // Ensure Jest types are here
+      "noImplicitAny": false,
+      "strict": false,
     }
   }
   

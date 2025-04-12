@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import ChatLayout from './components/ChatLayout/ChatLayout.tsx';
+import ChatLayout from './components/ChatLayout/ChatLayout';
 import './index.css';
 
 const rootElement = document.getElementById('root') as HTMLElement;

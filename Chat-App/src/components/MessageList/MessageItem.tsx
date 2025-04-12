@@ -1,6 +1,6 @@
 import React from "react";
 import { Message } from '../../types/chatTypes';
-import Avatar from '../Avatar/Avatar.tsx';
+import Avatar from '../Avatar/Avatar';
 import styles from './MessageItem.module.css';
 
 interface MessageItemProps {

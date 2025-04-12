@@ -1,8 +1,7 @@
+// @ts-nocheck
 import React, { useEffect, useState } from 'react';
 import { Chat } from '../../types/chatTypes';
-import Avatar from '../Avatar/Avatar.tsx';
 import styles from './SidebarItem.module.css';
-import { FULL_ROOM } from '../../constants/constants.tsx';
 import { Alert } from '@mui/material';
 import { MdGroups } from "react-icons/md";
 

@@ -1,1 +1,0 @@
-  export const FULL_ROOM = '2/2';

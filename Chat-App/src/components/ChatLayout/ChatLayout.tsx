@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Sidebar from '../Sidebar/Sidebar.tsx';
-import ChatHeader from '../ChatHeader/ChatHeader.tsx';
-import MessageList from '../MessageList/MessageList.tsx';
-import MessageInput from '../MessageInput/MessageInput.tsx';
-import UsernameModal from '../UsernameModal/UsernameModal.tsx';
-import useWebSocket from '../hooks/useWebSocket.tsx';
-import { Chat, Message } from '../../types/chatTypes.ts';
+import Sidebar from '../Sidebar/Sidebar';
+import ChatHeader from '../ChatHeader/ChatHeader';
+import MessageList from '../MessageList/MessageList';
+import MessageInput from '../MessageInput/MessageInput';
+import UsernameModal from '../UsernameModal/UsernameModal';
+import useWebSocket from '../hooks/useWebSocket';
+import { Chat, Message } from '../../types/chatTypes';
 import styles from './ChatLayout.module.css';
 
 const ChatLayout: React.FC = () => {
-
-  const delay = ms => new Promise(res => setTimeout(res, ms));
 
   const [username, setUsername] = useState<string | null>(null);
   const [usernameError, setUsernameError] = useState<boolean>(false);
@@ -203,12 +201,11 @@ const ChatLayout: React.FC = () => {
     }, 100);
   };
 
-  const handleUsernameSubmit = async(name: string) => {
+  const handleUsernameSubmit = (name: string) => {
     setTimeout(() => {
       sendToServer(send, 2, name);
     }, 100);
     setUsername(name.trim());
-    await delay(5000);
   };
 
   useEffect(() => {

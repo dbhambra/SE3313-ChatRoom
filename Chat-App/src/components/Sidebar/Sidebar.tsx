@@ -1,5 +1,5 @@
 import React from 'react';
-import SidebarItem from './SidebarItem.tsx';
+import SidebarItem from './SidebarItem';
 import { Chat } from '../../types/chatTypes';
 import styles from './Sidebar.module.css';
 
