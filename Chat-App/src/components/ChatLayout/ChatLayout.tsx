@@ -84,10 +84,6 @@ const ChatLayout: React.FC = () => {
     selectedChatRef.current = selectedChat;
   }, [selectedChat]);
 
-  
-  useEffect(() => {
-   console.log(isRoomFull)
-  }, [isRoomFull]);
 
   const handleServerMessage = (msg: { type: string; payload: string }) => {
     const { type, payload } = msg;

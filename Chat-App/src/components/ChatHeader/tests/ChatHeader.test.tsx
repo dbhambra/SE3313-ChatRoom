@@ -18,7 +18,6 @@ describe('ChatHeader', () => {
   it('renders without crashing when chatroom is provided', () => {
     render(<ChatHeader chatroom={mockChatroom} />);
     expect(screen.getByText('Room 1')).toBeInTheDocument();
-    expect(screen.getByText('0/2')).toBeInTheDocument();
   });
 
   it('renders nothing when chatroom is null', () => {

@@ -13,7 +13,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chatroom }) => {
 
   return (
     <div className={styles.header}>
-      // @ts-ignore
       <MdGroups className={styles.icon} />
       <div className={styles.info}>
         {chatroom?.messages && (
